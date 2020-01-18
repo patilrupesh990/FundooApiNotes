@@ -1,7 +1,5 @@
 package com.bridgelabz.notes.service;
 
-import java.util.List;
-
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,19 +29,16 @@ public class NoteServiceImpl {
 	NotesResponce noteObjectResponse;
 
 	@Transactional
-	public ResponseEntity<NoteCreatedResponse> createNote(Note note, String token) {
+	public ResponseEntity<NotesResponce> createNote(Note note, String token) {
 		Long id = getUserIdFromToken(token);
 		Note noteTemp = noteDao.createNote(id, note);
 		if (id != 0) {
-			notCreatedResponse.setId(id);
-			notCreatedResponse.setName(note.getName());
-			notCreatedResponse.setTitle(note.getTitle());
 			if (noteTemp != null)
-				return ResponseEntity.status(HttpStatus.CREATED).body(notCreatedResponse);
+				return ResponseEntity.status(HttpStatus.CREATED).body(new NotesResponce(201, "Note Created"));
 			else
-				return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(notCreatedResponse);
+				return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(new NotesResponce(424,"Some internal Errors !!Be patients we will Solve Sorty"));
 		}
-		return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(notCreatedResponse);
+		return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(new NotesResponce(424,"USer Does not exist"));
 	}
 
 	public long getUserIdFromToken(String token) {
@@ -53,36 +48,94 @@ public class NoteServiceImpl {
 	@Transactional
 	public ResponseEntity<NotesResponce> update(Long noteId, Note noteDTO, String token) {
 		log.info("abccc");
-		Note note = noteDao.getNoteById(noteId);
-		System.out.println("m");
-		Long userId = getUserIdFromToken(token);
-		if (userId != 0) {
-			if (noteDTO.getTitle() != null)
-				note.setTitle(noteDTO.getTitle());
-			if (noteDTO.getDescription() != null)
-				note.setDescription(noteDTO.getDescription());
-			if (noteDao.updateNote(noteId, note, userId) != null)
-				return ResponseEntity.status(HttpStatus.OK).body(new NotesResponce(200,"Note Updated"));
+		try {
+			Note note = noteDao.getNoteById(noteId);
+			Long userId = getUserIdFromToken(token);
+			if (userId != 0) {
+				if (noteDTO.getTitle() != null)
+					note.setTitle(noteDTO.getTitle());
+				if (noteDTO.getDescription() != null)
+					note.setDescription(noteDTO.getDescription());
+				if (noteDao.updateNote(noteId, note, userId) != null)
+					return ResponseEntity.status(HttpStatus.OK).body(new NotesResponce(200, "Note Updated"));
+			}
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new NotesResponce(400, "Note Can't Updated"));
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new NotesResponce(400, "User Does Not exist"));
 		}
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new NotesResponce(400,"Note Can't Updated"));
 	}
-	
+
 	@Transactional
 	public ResponseEntity<String> delete(Long noteId, String token) {
 		Long userId = getUserIdFromToken(token);
-		if (noteDao.deleteNote(userId, noteId) == 1) {
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body("Note deleted SuccessFully");
-		} else {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Notes unavailable");
+		try {
+			if (noteDao.deleteNote(userId, noteId) == 1) {
+				return ResponseEntity.status(HttpStatus.ACCEPTED).body("Note deleted SuccessFully");
+			} else {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Notes unavailable");
+			}
+		} catch (NullPointerException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User Does Note Exist" + e);
 		}
 	}
-	
+
 	@Transactional
-	public List<Note> getNoteList(String token)
-	{
-		noteDao.getAllNoteList(getUserIdFromToken(token));
-		
-		return null;
+	public ResponseEntity<NotesResponce> getNoteList(String token) {
+		log.info("Number of Notes Available" + noteDao.getAllNoteList(getUserIdFromToken(token)).size());
+		try {
+			if (noteDao.getAllNoteList(getUserIdFromToken(token)).isEmpty())
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+						.body(new NotesResponce(400, "No any Notes Available"));
+			else
+				return ResponseEntity.status(HttpStatus.FOUND)
+						.body(new NotesResponce(200,
+								"Number of Notes Available Are: "
+										+ noteDao.getAllNoteList(getUserIdFromToken(token)).size(),
+								noteDao.getAllNoteList(getUserIdFromToken(token))));
+		} catch (NullPointerException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(new NotesResponce(400, "Pin Operation Sucessfully done"));
+		}
+	}
+
+	@Transactional
+	public ResponseEntity<NotesResponce> pinnedNotes(String token, Long noteId) {
+		Long userId = getUserIdFromToken(token);
+		if (noteDao.pinUnpinNote(userId, noteId) == 1)
+			return ResponseEntity.status(HttpStatus.ACCEPTED)
+					.body(new NotesResponce(202, "Pin Operation Sucessfully done"));
+		else 
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(new NotesResponce(400,"No notes Available or No User Available"));
+	}
+
+	@Transactional
+	public ResponseEntity<NotesResponce> trashedNote(String token, Long noteId) {
+		Long userId = getUserIdFromToken(token);
+		try {
+			if (userId > 0) {
+				noteDao.isTrash(noteId);
+				return ResponseEntity.status(HttpStatus.ACCEPTED)
+						.body(new NotesResponce(202, "Note successfully moved to Trashed"));
+			} else {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+						.body(new NotesResponce(400, "No notes Available or No User Available"));
+			}
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(new NotesResponce(400, "No notes Available or No User Available"));
+		}
+	}
+	@Transactional
+	public ResponseEntity<NotesResponce> getTrashNotes(String token) {
+		try {
+			 return ResponseEntity.status(HttpStatus.ACCEPTED)
+						.body(new NotesResponce(202, "Total Trashed Notes Are:"+noteDao.getTrashedNoteList(getUserIdFromToken(token)).size(),noteDao.getTrashedNoteList(getUserIdFromToken(token))));
+		}catch (Exception e) {
+			log.info("get Trashed"+e);
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(new NotesResponce(400, "No notes Available or No User Available"+e));
+		}
 	}
 
 }
