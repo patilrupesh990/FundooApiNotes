@@ -70,5 +70,5 @@ public class NoteController
 	{
 		return noteService.getTrashNotes(token);
 	}
-	
+	//
 }
