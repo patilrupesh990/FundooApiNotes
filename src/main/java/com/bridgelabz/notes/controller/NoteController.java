@@ -3,6 +3,7 @@ package com.bridgelabz.notes.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bridgelabz.notes.model.Note;
-import com.bridgelabz.notes.response.NoteCreatedResponse;
 import com.bridgelabz.notes.response.NotesResponce;
 import com.bridgelabz.notes.service.NoteServiceImpl;
 
@@ -29,7 +29,7 @@ public class NoteController
 	
 
 	@PostMapping("/create/{token}")
-	public ResponseEntity<NoteCreatedResponse> createNote(@RequestBody Note note, @PathVariable("token") String token) {
+	public ResponseEntity<NotesResponce> createNote(@RequestBody Note note, @PathVariable("token") String token) {
 		log.info("Note Controller createdResponse");
 		return noteService.createNote(note, token);
 	}
@@ -47,8 +47,28 @@ public class NoteController
 		return noteService.delete(noteId, token);
 	}
 	
+	@GetMapping("/allnotes/{token}")
+	public ResponseEntity<NotesResponce> getAllNotes(@RequestHeader String token)
+	{
+		return noteService.getNoteList(token);
+	}
 	
+	@PutMapping("/pin/{token}")
+	public ResponseEntity<NotesResponce> pinnedNote(@RequestHeader String token,@RequestParam("noteId") Long noteId)
+	{
+		return noteService.pinnedNotes(token, noteId);
+	}
 	
+	@PutMapping("trash/{token}")
+	public ResponseEntity<NotesResponce> moveToTrase(@RequestHeader String token,@RequestParam("noteId") Long noteId)
+	{
+		return noteService.trashedNote(token, noteId);
+	}
 	
+	@GetMapping("trash/notes/{token}")
+	public ResponseEntity<NotesResponce> getAllTrashNotes(@RequestHeader String token)
+	{
+		return noteService.getTrashNotes(token);
+	}
 	
 }
