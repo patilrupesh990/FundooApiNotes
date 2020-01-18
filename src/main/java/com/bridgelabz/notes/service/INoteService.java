@@ -24,7 +24,7 @@ public interface INoteService {
 
 	public void moveToTrash(Integer nId);
 
-	public List<Note> getTrashedNoteList(Integer uId);
+	public List<Note> getTrashedNoteList(Long userId);
 	
 	//public void collaborateUser(User cUser, Note cNote);
 	
