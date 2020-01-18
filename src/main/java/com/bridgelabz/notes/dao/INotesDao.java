@@ -17,11 +17,14 @@ public interface INotesDao
 	
 	public Integer deleteNote(Long uId, Long nId);
 	
-	 public Integer pinUnpinNote(Long userId, Long noteId);
+	public Integer pinUnpinNote(Long userId, Long noteId);
+	
 	public List<Note> getAllNoteList(Long uId);
+	
 	public Integer isTrash(Long noteId);	
+	
 	void archiveNote(Note note);
-
+	
 	List<Note> getTrashedNoteList(Long userId);
 	
 	
