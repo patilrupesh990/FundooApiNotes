@@ -11,10 +11,9 @@ import lombok.Data;
 @Data
 @Component
 public class NotesResponce {
-	
-		
 		private int status;
 		private String response;
+		private Object object;
 		private List<Note> list; 
 public NotesResponce(int status, String response) {
 			super();
@@ -25,13 +24,14 @@ public NotesResponce(int status, String response) {
 			super();
 			this.status = status;
 			this.response = response;
+			this.object=object;
+			
 		}
 		public NotesResponce(int status, String response, List<Note> list) {
 			super();
 			this.status = status;
 			this.response = response;
-
-				
+			this.list=list;	
 			}
 		public NotesResponce() {}
 }
