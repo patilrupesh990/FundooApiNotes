@@ -1,5 +1,7 @@
 package com.bridgelabz.notes.dao;
 
+import java.util.List;
+
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -11,25 +13,34 @@ import lombok.extern.slf4j.Slf4j;
 
 @Repository
 @Slf4j
-public class LabelDaoimpl implements ILabelDao{
+public class LabelDaoimpl implements ILabelDao {
 	@Autowired
 	HibernateUtil<Label> hibernateUtil;
 
-	public int addLabel(Label label, Long userId) {
+	public int addLabel(Label label, Long noteId) {
+		System.out.println(noteId);
+		
+		String query = "UPDATE Label SET noteId = :NOTEID WHERE labelId= :LABELID";
+		Query<Label> hQuery = hibernateUtil.createQuery(query);
+		hQuery.setParameter("NOTEID", noteId);
+		hQuery.setParameter("LABELID",label.getLabelId());
+		return hQuery.executeUpdate();
+	}
+
+	public boolean createLabel(Label label) {
 		try {
-			label.setUserId(userId);
+
 			hibernateUtil.save(label);
-			return 1;
+			return true;
 		} catch (Exception e) {
-			return 0;
+			return false;
 		}
 	}
 
-	public int deleteLabel(Long noteId, Long labelId) {
-		String query = "DELETE FROM Label WHERE labelId = :label AND noteId =:note";
+	public int deleteLabel( Long labelId) {
+		String query = "DELETE FROM Label WHERE labelId = :label";
 		Query<Label> hQuery = hibernateUtil.createQuery(query);
 		hQuery.setParameter("label", labelId);
-		hQuery.setParameter("note", noteId);
 		return hQuery.executeUpdate();
 	}
 
@@ -43,8 +54,32 @@ public class LabelDaoimpl implements ILabelDao{
 		return 0;
 	}
 
+	public Label getLableById(Long labelId) {
+		return hibernateUtil.getCurrentLable(labelId);
+	}
+	
+	public List<Label> getAllLabelByUserId(Long userId)
+	{
+		String query = "FROM Label WHERE userId = :user";
+		Query<Label> hQuery = hibernateUtil.createQuery(query);
+		hQuery.setParameter("user", userId);
+		return hQuery.getResultList();
+	}
+
+	public boolean verifyUser(Long userId) {
+		log.info("Verify user Dao UserId:"+userId);
+		log.info("true/false:"+hibernateUtil.getUserById(userId));
+		if (hibernateUtil.getUserById(userId)) {
+			log.info("Verify user Dao inside if");
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+
 	public void getAllNotesByLabelName(String labelName) {
-		
+
 	}
 
 }
