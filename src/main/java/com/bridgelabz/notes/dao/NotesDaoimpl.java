@@ -2,9 +2,6 @@ package com.bridgelabz.notes.dao;
 
 import java.util.List;
 
-import javax.transaction.Transaction;
-
-import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -40,18 +37,18 @@ public class NotesDaoimpl implements INotesDao {
 
 	@Override
 	public Note updateNote(Long noteId, Note note, Long userId) {
-			note.setUserId(userId);
-			hibernateUtil.update(note);
-			return note;
+		note.setUserId(userId);
+		hibernateUtil.update(note);
+		return note;
 	}
 
 	@Override
 	public Integer deleteNote(Long userId, Long noteId) {
 
-		String query = "DELETE FROM Note WHERE id = :noteid AND userId =:userid";
+		String query = "DELETE FROM Note WHERE id = :noteid AND userId =:useri";
 		Query<Note> hQuery = hibernateUtil.createQuery(query);
 		hQuery.setParameter("noteid", noteId);
-		hQuery.setParameter("userid", userId);
+		hQuery.setParameter("useri", userId);
 		return hQuery.executeUpdate();
 	}
 
@@ -67,42 +64,75 @@ public class NotesDaoimpl implements INotesDao {
 	public Integer pinUnpinNote(Long userId, Long noteId) {
 		Note noteObject = hibernateUtil.getCurrentNote(noteId);
 		if (noteObject != null) {
-			noteObject.setPinned(!noteObject.isPinned());
+			noteObject.setPin(!noteObject.isPin());
 			hibernateUtil.update(noteObject);
-			return 1;
+			if(noteObject.isPin())
+				return 1;
+			else
+				return 2;
+		}
+		return 0;
+	}
+	@Override
+	public Integer trashedNote(Long noteId) {
+		Note noteObject = hibernateUtil.getCurrentNote(noteId);
+		if (noteObject != null) {
+			noteObject.setTrash(!noteObject.isTrash());
+			hibernateUtil.update(noteObject);
+			if(noteObject.isTrash())
+				return 1;
+			else
+				return 2;
 		}
 		return 0;
 	}
 
-	public Integer isTrash(Long noteId) {
-		Note noteObject = hibernateUtil.getCurrentNote(noteId);
-		if (noteObject != null) {
-			noteObject.setTrashed(!noteObject.isTrashed());
-			hibernateUtil.update(noteObject);
-			return 1;
-		}
-		return 0;
-	}
-	
-	public List<Note> getNoteList(Integer userId, String noteCategory) {
-			
-		return null;
-	}
 	@Override
 	public List<Note> getTrashedNoteList(Long userId) {
-		String query = "FROM Note WHERE isTrashed is true AND userId=:userid";
+		String query = "FROM Note WHERE isTrash is true AND userId=:userid";
 		Query<Note> hquery = hibernateUtil.select(query);
 		hquery.setParameter("userid", userId);
 		return hquery.list();
 	}
 
 	@Override
-	public void archiveNote(Note note) {
+	public Integer archivedNote(Long noteId) {
+		Note noteobject = hibernateUtil.getCurrentNote(noteId);
+		if (noteobject != null) {
+			noteobject.setArchive(!noteobject.isArchive());
+			hibernateUtil.update(noteobject);
+			if (noteobject.isArchive())
+				return 1;
+			else
+				return 2;
+		} else {
+			return 0;
+		}
 
 	}
 
-	public Session getSession() {
+	@Override
+	public List<Note> getArchiveNoteList(Long userId) {
+		String query = "FROM Note WHERE isArchive is true AND userId=:userid";
+		Query<Note> hquery = hibernateUtil.select(query);
+		hquery.setParameter("userid", userId);
+		return hquery.list();
+	}
+	
+	public List<Note> getAllNotesByLabel(String noteID,String labelID)
+	{
+	//	String query="FROM Note WHER"
 		return null;
+		
+	}
+	//dont toch
+	@Override
+	public Note findNoteById(Long noteId)
+	{
+		String query="FROM Note WHERE id =:noteId";
+		Query<Note> hquery = hibernateUtil.select(query);
+		hquery.setParameter("noteId", noteId);
+		return hquery.getSingleResult();
 	}
 
 }
