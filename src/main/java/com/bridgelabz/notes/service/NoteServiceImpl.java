@@ -27,7 +27,7 @@ public class NoteServiceImpl {
 	NoteCreatedResponse notCreatedResponse;
 	@Autowired
 	NotesResponce noteObjectResponse;
-
+	String status400="No notes Available or UserToken Expired";
 	@Transactional
 	public ResponseEntity<NotesResponce> createNote(Note note, String token) {
 		Long id = getUserIdFromToken(token);
@@ -36,9 +36,10 @@ public class NoteServiceImpl {
 			if (noteTemp != null)
 				return ResponseEntity.status(HttpStatus.CREATED).body(new NotesResponce(201, "Note Created"));
 			else
-				return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(new NotesResponce(424,"Some internal Errors !!Be patients we will Solve Sorty"));
+				return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY)
+						.body(new NotesResponce(424, "Some internal Errors !!Be patients we will Solve Sorty"));
 		}
-		return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(new NotesResponce(424,"USer Does not exist"));
+		return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(new NotesResponce(424, "USer Does not exist"));
 	}
 
 	public long getUserIdFromToken(String token) {
@@ -100,42 +101,97 @@ public class NoteServiceImpl {
 
 	@Transactional
 	public ResponseEntity<NotesResponce> pinnedNotes(String token, Long noteId) {
-		Long userId = getUserIdFromToken(token);
-		if (noteDao.pinUnpinNote(userId, noteId) == 1)
-			return ResponseEntity.status(HttpStatus.ACCEPTED)
-					.body(new NotesResponce(202, "Pin Operation Sucessfully done"));
-		else 
+		try {
+			Long userId = getUserIdFromToken(token);
+			Integer result=noteDao.pinUnpinNote(userId, noteId);
+			if (result == 1) {
+				return ResponseEntity.status(HttpStatus.ACCEPTED)
+						.body(new NotesResponce(202, "Note Pinned Sucessfully"));
+			}else if(result == 2){
+				return ResponseEntity.status(HttpStatus.ACCEPTED)
+						.body(new NotesResponce(202, "Note Unpinned Sucessfully"));
+			} else {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+						.body(new NotesResponce(400, status400));
+			}
+		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-					.body(new NotesResponce(400,"No notes Available or No User Available"));
+					.body(new NotesResponce(400, status400));
+		}
 	}
 
 	@Transactional
 	public ResponseEntity<NotesResponce> trashedNote(String token, Long noteId) {
-		Long userId = getUserIdFromToken(token);
 		try {
-			if (userId > 0) {
-				noteDao.isTrash(noteId);
+			getUserIdFromToken(token);
+			Integer result=noteDao.trashedNote(noteId);
+			if (result == 1) {
 				return ResponseEntity.status(HttpStatus.ACCEPTED)
 						.body(new NotesResponce(202, "Note successfully moved to Trashed"));
+			} else if (result == 2) {
+				return ResponseEntity.status(HttpStatus.ACCEPTED)
+						.body(new NotesResponce(202, "Note successfully Restored"));
 			} else {
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-						.body(new NotesResponce(400, "No notes Available or No User Available"));
+						.body(new NotesResponce(400, status400));
 			}
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-					.body(new NotesResponce(400, "No notes Available or No User Available"));
+					.body(new NotesResponce(400, status400));
 		}
 	}
-	@Transactional
+	
 	public ResponseEntity<NotesResponce> getTrashNotes(String token) {
 		try {
-			 return ResponseEntity.status(HttpStatus.ACCEPTED)
-						.body(new NotesResponce(202, "Total Trashed Notes Are:"+noteDao.getTrashedNoteList(getUserIdFromToken(token)).size(),noteDao.getTrashedNoteList(getUserIdFromToken(token))));
-		}catch (Exception e) {
-			log.info("get Trashed"+e);
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-					.body(new NotesResponce(400, "No notes Available or No User Available"+e));
+			return ResponseEntity.status(HttpStatus.ACCEPTED)
+					.body(new NotesResponce(202,
+							"Total Trashed Notes Are:" + noteDao.getTrashedNoteList(getUserIdFromToken(token)).size(),
+							noteDao.getTrashedNoteList(getUserIdFromToken(token))));
+		} catch (Exception e) {
+			log.info("get Trashed" + e);
+			return ResponseEntity.status(HttpStatus.CONFLICT)
+					.body(new NotesResponce(400, status400 ));
 		}
 	}
+
+	@Transactional
+	public ResponseEntity<NotesResponce> archivedNote(String token, Long noteId) {
+		try {
+			getUserIdFromToken(token);
+			Integer result=noteDao.archivedNote(noteId);
+			if (result== 1) {
+				return ResponseEntity.status(HttpStatus.ACCEPTED)
+						.body(new NotesResponce(202, "Note Successfully moved in Achive Folder"));
+			} else if (result == 2) {
+				return ResponseEntity.status(HttpStatus.ACCEPTED)
+						.body(new NotesResponce(202, "Note Successfully moved from Achive Folder to DashBoard"));
+			} else {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+						.body(new NotesResponce(400, status400));
+			}
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(new NotesResponce(400, status400));
+		}
+	}
+	
+	
+	public ResponseEntity<NotesResponce> getArchivedNotes(String token) {
+		try {
+			return ResponseEntity.status(HttpStatus.ACCEPTED)
+					.body(new NotesResponce(202,
+							"Total Achived Notes Are:" + noteDao.getArchiveNoteList(getUserIdFromToken(token)).size(),
+							noteDao.getTrashedNoteList(getUserIdFromToken(token))));
+		} catch (Exception e) {
+			log.info("get Archived" + e);
+			return ResponseEntity.status(HttpStatus.CONFLICT)
+					.body(new NotesResponce(400, status400 ));
+		}
+	}
+	
+//	public  ResponseEntity<NotesResponce> getAllNotesByLabel(String token,String labelNAme)
+//	{
+//		
+//	}
 
 }
