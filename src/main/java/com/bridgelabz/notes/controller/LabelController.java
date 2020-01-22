@@ -1,8 +1,10 @@
 package com.bridgelabz.notes.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +18,7 @@ import com.bridgelabz.notes.service.ILabelService;
 
 import lombok.extern.slf4j.Slf4j;
 
+@EnableEurekaClient
 @RestController
 @Slf4j
 @RequestMapping("/labels")
@@ -25,20 +28,31 @@ public class LabelController {
 	ILabelService labelService;
 	
 	@PostMapping("/add")
-	public ResponseEntity<LabelResponce> addLable(@RequestHeader String token,@RequestBody Label label)
+	public ResponseEntity<LabelResponce> addLable(@RequestHeader String token,@RequestHeader Long labelId,@RequestHeader Long noteId)
 	{
-		return labelService.addLable(token, label);
+		return labelService.addLabel(token, labelId,noteId);
 	}
-	
-	@DeleteMapping("/delete")
-	public  ResponseEntity<LabelResponce> deleteLabel(@RequestHeader String token,@RequestHeader Long labelId,@RequestHeader Long noteId)
+	@PostMapping("/create")
+	public ResponseEntity<LabelResponce> createLabel(@RequestHeader String token,@RequestBody Label label)
 	{
-		return labelService.deleteLabel(token, labelId, noteId);
+		return labelService.createLable(token, label);
+	}
+	@DeleteMapping("/delete")
+	public  ResponseEntity<LabelResponce> deleteLabel(@RequestHeader String token,@RequestHeader Long labelId)
+	{
+		return labelService.deleteLabel(token, labelId);
 	}
 	@PutMapping("/edit")
 	public  ResponseEntity<LabelResponce> editLabel(@RequestHeader Long labelId,@RequestHeader String newName,@RequestHeader String token)
 	{
 		return labelService.editLabel(labelId, newName, token);
 	}
+	
+	@GetMapping("/label")
+	public ResponseEntity<LabelResponce> getAllLabels(@RequestHeader String token)
+	{
+		return labelService.getAllLabels(token);
+	}
+	
 	
 }
