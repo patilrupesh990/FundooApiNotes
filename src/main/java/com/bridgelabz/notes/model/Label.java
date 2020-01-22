@@ -39,7 +39,6 @@ public class Label {
 	@Column(name="user_id")
     private Long userId;
 	
-	@NotNull
 	@Column(name="note_id")
 	private Long noteId;
 	
