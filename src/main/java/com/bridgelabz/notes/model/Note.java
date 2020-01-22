@@ -2,12 +2,17 @@ package com.bridgelabz.notes.model;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -26,7 +31,7 @@ import lombok.ToString;
 @Table(name = "notes")
 public class Note {
 	@Id
-	@GeneratedValue(generator = "sequence", strategy = GenerationType.AUTO)
+	@GeneratedValue(generator = "sequence", strategy = GenerationType.IDENTITY)
 	
 	private Long id;
 	
@@ -40,10 +45,10 @@ public class Note {
 	private String description;
 	
 	@Column(name="isTrashed") 
-	private boolean isTrashed;//trash
+	private boolean isTrash;//trash
 	
 	@Column(name="isPinned") 
-	private boolean isPinned;//pin
+	private boolean isPin;//pin
 	
 	@Column(name="isArchive") 
 	private boolean isArchive;
@@ -66,5 +71,10 @@ public class Note {
 	
 	@Column(name="user_id")
 	private Long userId;
+	
+	@JoinColumn(name="user_id")
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name="note_label",joinColumns = {@JoinColumn(name="note_id")},inverseJoinColumns = {@JoinColumn(name="label_id")})
+	private List<Label> labelList;
 
 }
