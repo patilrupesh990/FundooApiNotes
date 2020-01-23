@@ -9,10 +9,14 @@ import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.bridgelabz.notes.model.Label;
 import com.bridgelabz.notes.model.Note;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @SuppressWarnings("unchecked")
+@Slf4j
 public class HibernateUtil<T> 
 {
 	@Autowired 
@@ -52,6 +56,11 @@ public class HibernateUtil<T>
 		Session session = entityManager.unwrap(Session.class);
 		return (T) session.get(Note.class,value);
 	}
-//	Note noteObj = currentSession.get(Note.class, noteId);
-
+	public T getCurrentLable(Serializable value)
+	{
+		log.info("value:"+value);
+		Session session = entityManager.unwrap(Session.class);
+		return (T) session.get(Label.class,value);
+	}
+	
 }
