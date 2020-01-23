@@ -10,7 +10,6 @@ public interface ILabelDao {
 	public boolean createLabel(Label label);
 	public int deleteLabel( Long labelId) ;
 	public int updateLable(Long labelId, String newName) ;
-	public boolean verifyUser(Long userId);
 	public Label getLableById(Long labelId);
 	public List<Label> getAllLabelByUserId(Long userId);
 
