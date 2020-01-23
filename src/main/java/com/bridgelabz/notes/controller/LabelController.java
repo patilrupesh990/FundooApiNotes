@@ -16,11 +16,8 @@ import com.bridgelabz.notes.model.Label;
 import com.bridgelabz.notes.response.LabelResponce;
 import com.bridgelabz.notes.service.ILabelService;
 
-import lombok.extern.slf4j.Slf4j;
-
 @EnableEurekaClient
 @RestController
-@Slf4j
 @RequestMapping("/labels")
 public class LabelController {
 	
