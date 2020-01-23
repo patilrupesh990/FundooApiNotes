@@ -14,7 +14,6 @@ public interface ILabelService {
 	
 	public ResponseEntity<LabelResponce> editLabel(Long labelId,String newName,String token);
 	
-	public boolean verifyToken(String token);
 	public ResponseEntity<LabelResponce> getAllLabels(String token); 
 
 	//public void editLabel();
