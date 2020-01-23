@@ -18,7 +18,6 @@ public class LabelDaoimpl implements ILabelDao {
 	HibernateUtil<Label> hibernateUtil;
 
 	public int addLabel(Label label, Long noteId) {
-		System.out.println(noteId);
 		
 		String query = "UPDATE Label SET noteId = :NOTEID WHERE labelId= :LABELID";
 		Query<Label> hQuery = hibernateUtil.createQuery(query);
@@ -66,17 +65,7 @@ public class LabelDaoimpl implements ILabelDao {
 		return hQuery.getResultList();
 	}
 
-	public boolean verifyUser(Long userId) {
-		log.info("Verify user Dao UserId:"+userId);
-		log.info("true/false:"+hibernateUtil.getUserById(userId));
-		if (hibernateUtil.getUserById(userId)) {
-			log.info("Verify user Dao inside if");
-			return true;
-		} else {
-			return false;
-		}
-
-	}
+	
 
 	public void getAllNotesByLabelName(String labelName) {
 
