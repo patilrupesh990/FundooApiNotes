@@ -36,10 +36,10 @@ public class NotesDaoimpl implements INotesDao {
 	}
 
 	@Override
-	public Note updateNote(Long noteId, Note note, Long userId) {
-		note.setUserId(userId);
-		hibernateUtil.update(note);
-		return note;
+	public void updateNote(Long noteId, Note note, Long userId) {
+		 note.setUserId(userId);
+		 hibernateUtil.update(note);
+		
 	}
 
 	@Override
