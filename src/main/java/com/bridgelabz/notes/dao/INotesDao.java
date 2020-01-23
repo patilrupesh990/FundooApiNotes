@@ -10,7 +10,7 @@ public interface INotesDao
 	
 	
 	public Note createNote(Long userId, Note note);
-	public Note updateNote(Long noteId, Note note, Long userId);
+	public void updateNote(Long noteId, Note note, Long userId);
 	public Integer deleteNote(Long uId, Long nId);
 	
 	
