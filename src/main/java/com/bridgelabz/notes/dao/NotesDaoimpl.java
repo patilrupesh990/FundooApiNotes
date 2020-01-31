@@ -32,6 +32,7 @@ public class NotesDaoimpl implements INotesDao {
 		String query = "FROM Note WHERE id =:noteId";
 		Query<Note> hquery = hibernateUtil.select(query);
 		hquery.setParameter("noteId", noteId);
+
 		return hquery.getSingleResult();
 	}
 
@@ -45,11 +46,13 @@ public class NotesDaoimpl implements INotesDao {
 	@Override
 	public Integer deleteNote(Long userId, Long noteId) {
 
-		String query = "DELETE FROM Note WHERE id = :noteid AND userId =:useri";
+		String query = "DELETE FROM Note WHERE id = :noteid AND userId =:useri AND isTrash is true";
 		Query<Note> hQuery = hibernateUtil.createQuery(query);
 		hQuery.setParameter("noteid", noteId);
 		hQuery.setParameter("useri", userId);
-		return hQuery.executeUpdate();
+		Integer result=hQuery.executeUpdate();
+		log.info("result"+result);
+		return result;
 	}
 
 	@Override
@@ -134,5 +137,5 @@ public class NotesDaoimpl implements INotesDao {
 		hquery.setParameter("noteId", noteId);
 		return hquery.getSingleResult();
 	}
-
+	
 }
