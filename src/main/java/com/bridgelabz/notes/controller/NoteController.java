@@ -29,52 +29,59 @@ public class NoteController {
 	NoteServiceImpl noteService;
 
 	@PostMapping("/create/{token}")
-	public ResponseEntity<NotesResponce> createNote(@RequestBody Note note, @PathVariable("token") String token) {
+	public ResponseEntity<Object> createNote(@RequestBody Note note, @PathVariable("token") String token) {
 		log.info("Note Controller createdResponse");
 		return noteService.createNote(note, token);
 	}
 
 	@PutMapping("/update/{token}")
-	public ResponseEntity<NotesResponce> update(@RequestBody Note noteDTO, @RequestHeader String token) {
+	public ResponseEntity<Object> update(@RequestBody Note noteDTO, @RequestHeader String token) {
 		log.info("abc");
 		return noteService.update(noteDTO.getId(), noteDTO, token);
 	}
 
 	@DeleteMapping("/delete/{token}")
-	public ResponseEntity<String> delete(@RequestParam("noteId") Long noteId, @RequestHeader String token) {
+	public ResponseEntity<Object> delete(@RequestParam("noteId") Long noteId, @RequestHeader String token) {
 		return noteService.delete(noteId, token);
 	}
 
 	@GetMapping("/allnotes/{token}")
-	public ResponseEntity<NotesResponce> getAllNotes(@RequestHeader String token) {
+	public ResponseEntity<Object> getAllNotes(@PathVariable("token") String token) {
 		return noteService.getNoteList(token);
 	}
 
 	@PutMapping("/pin/{token}")
-	public ResponseEntity<NotesResponce> pinnedNote(@RequestHeader String token, @RequestParam("noteId") Long noteId) {
+	public ResponseEntity<Object> pinnedNote(@RequestHeader String token, @RequestParam("noteId") Long noteId) {
 		return noteService.pinnedNotes(token, noteId);
 	}
 
-	@PutMapping("trash/{token}")
-	public ResponseEntity<NotesResponce> moveToTrase(@RequestHeader String token, @RequestParam("noteId") Long noteId) {
+	@PutMapping("/trash/{token}")
+	public ResponseEntity<Object> moveToTrase(@RequestHeader String token, @RequestParam("noteId") Long noteId) {
 		return noteService.trashedNote(token, noteId);
 	}
 
-	@GetMapping("trash/notes/{token}")
-	public ResponseEntity<NotesResponce> getAllTrashedNotes(@RequestHeader String token) {
+	@GetMapping("/trash/notes/{token}")
+	public ResponseEntity<Object> getAllTrashedNotes(@RequestHeader String token) {
 		return noteService.getTrashNotes(token);
 	}
 
-	@PutMapping("archive/{token}")
-	public ResponseEntity<NotesResponce> moveToAchive(@RequestHeader String token,
+	@PutMapping("/archive/{token}")
+	public ResponseEntity<Object> moveToAchive(@RequestHeader String token,
 			@RequestParam("noteId") Long noteId) {
 		return noteService.archivedNote(token, noteId);
 	}
 
-	@GetMapping("archive/notes/{token}")
-	public ResponseEntity<NotesResponce> getAllArchivedNotes(@RequestHeader String token) {
+	@GetMapping("/archive/notes/{token}")
+	public ResponseEntity<Object> getAllArchivedNotes(@RequestHeader String token) {
 		return noteService.getArchivedNotes(token);
 	}
+	
+	@GetMapping("notes/{token}")
+	public ResponseEntity<Object> getNoteById(@RequestHeader String token,@RequestParam("noteId") Long noteId) {
+		return noteService.getNoteById(token,noteId);
+	}
+	
+	
 	
 	public ResponseEntity<NotesResponce> getAllNotesByLabel(@RequestHeader String token,@RequestHeader String labelName)
 	{
