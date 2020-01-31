@@ -12,5 +12,6 @@ public interface ILabelDao {
 	public int updateLable(Long labelId, String newName) ;
 	public Label getLableById(Long labelId);
 	public List<Label> getAllLabelByUserId(Long userId);
+	public List<Object[]> getNotesByLabelId(Long labelId);
 
 }
