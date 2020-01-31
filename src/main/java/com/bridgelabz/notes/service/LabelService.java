@@ -1,5 +1,7 @@
 package com.bridgelabz.notes.service;
 
+import java.util.List;
+
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.bridgelabz.notes.dao.ILabelDao;
 import com.bridgelabz.notes.dao.INotesDao;
+import com.bridgelabz.notes.exception.UserDoesNotExistException;
 import com.bridgelabz.notes.model.Label;
 import com.bridgelabz.notes.model.Note;
 import com.bridgelabz.notes.response.LabelResponce;
@@ -32,40 +35,41 @@ public class LabelService implements ILabelService {
 	RestTemplate restTemplate;
 
 	String response400 = "No Any Notes Available or Token Expired";
+	String userNotExist = "User Token Expired or User Does Note Exist";
 
 	@Override
-	public ResponseEntity<LabelResponce> createLable(String token, Label label) {
-		log.info("hdjifhdjifhdjkfhdjkfhd:----------------------------");
+	public ResponseEntity<Object> createLable(String token, Label label) {
+		log.info("User Id from token Create label Service----------------------------" + tokenUtil.parseToken(token));
 		label.setUserId(tokenUtil.parseToken(token));
 		if (verifyUser(token) && labelDao.createLabel(label))
 			return ResponseEntity.status(HttpStatus.CREATED)
-					.body(new LabelResponce(201, "" + label.getLabelName() + " Label Created Successfully "));
+					.body(new LabelResponce(201, "" + label.getLabelName() + " Label Created"));
 		else
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new LabelResponce(400, response400));
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UserDoesNotExistException(userNotExist, 400));
 	}
 
 	@Override
 	@Transactional
-	public ResponseEntity<LabelResponce> deleteLabel(String token, Long labelId) {
+	public ResponseEntity<Object> deleteLabel(String token, Long labelId) {
 		if (labelDao.deleteLabel(labelId) > 0 && verifyUser(token))
-			return ResponseEntity.status(HttpStatus.ACCEPTED)
-					.body(new LabelResponce(202, "label deleted Successfully"));
+			return ResponseEntity.status(HttpStatus.ACCEPTED).body(new LabelResponce(202, "label deleted"));
 		else
-			return ResponseEntity.status(HttpStatus.CONFLICT).body(new LabelResponce(400, response400));
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(new UserDoesNotExistException(userNotExist, 400));
 	}
 
 	@Override
 	@Transactional
-	public ResponseEntity<LabelResponce> editLabel(Long labelId, String newName, String token) {
+	public ResponseEntity<Object> editLabel(Long labelId, String newName, String token) {
 		if (labelDao.updateLable(labelId, newName) > 0 && verifyUser(token))
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body(new LabelResponce(201, "Label Updated"));
 		else
-			return ResponseEntity.status(HttpStatus.CONFLICT).body(new LabelResponce(400, response400));
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(new UserDoesNotExistException(userNotExist, 400));
 	}
 
+	@Override
 	@Transactional
 	// input note id,label id
-	public ResponseEntity<LabelResponce> addLabel(String token, Long labelId, Long noteId) {
+	public ResponseEntity<Object> addLabel(String token, Long labelId, Long noteId) {
 		try {
 			log.error("Msg" + noteId);
 			Note note = noteDao.findNoteById(noteId);
@@ -78,26 +82,38 @@ public class LabelService implements ILabelService {
 			if (verifyUser(token)) {
 
 				if (labelDao.addLabel(labelObject, noteId) > 0) {
-					return ResponseEntity.status(HttpStatus.ACCEPTED).body(new LabelResponce(201,
-							labelObject.getLabelName() + "Label AddedSuccessfully to->" + labelObject.getNoteId()));
+					return ResponseEntity.status(HttpStatus.ACCEPTED).body(new LabelResponce(201, " Label Added"));
 				} else {
 					return ResponseEntity.status(HttpStatus.CONFLICT).body(new LabelResponce(400, response400));
 				}
 			}
-			return ResponseEntity.status(HttpStatus.CONFLICT).body(new LabelResponce(400, response400));
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(new UserDoesNotExistException(userNotExist, 400));
 		} catch (NullPointerException e) {
 			return ResponseEntity.status(HttpStatus.CONFLICT).body(new LabelResponce(400, response400));
 		}
 	}
 
-	public ResponseEntity<LabelResponce> getAllLabels(String token) {
+	@Override
+	public ResponseEntity<Object> getAllLabels(String token) {
 		if (verifyUser(token)) {
 			Long userId = tokenUtil.parseToken(token);
 			return ResponseEntity.status(HttpStatus.ACCEPTED)
 					.body(new LabelResponce(201, labelDao.getAllLabelByUserId(userId),
 							"Number Of Labels Are: " + labelDao.getAllLabelByUserId(userId).size()));
 		} else {
-			return ResponseEntity.status(HttpStatus.CONFLICT).body(new LabelResponce(400, response400));
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(new UserDoesNotExistException(userNotExist, 400));
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Object[]> getNotesByLabelId(String token, Long labelId) {
+		if (verifyUser(token)) {
+
+			return labelDao.getNotesByLabelId(labelId);
+
+		} else {
+			return (List<Object[]>) ResponseEntity.status(HttpStatus.CONFLICT).body(new UserDoesNotExistException(userNotExist, 400));
+
 		}
 	}
 
