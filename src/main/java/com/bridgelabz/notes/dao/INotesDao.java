@@ -25,6 +25,8 @@ public interface INotesDao
 	public List<Note> getTrashedNoteList(Long userId);
 	public List<Note> getArchiveNoteList(Long userId);
 	public Note findNoteById(Long noteId);
+	public void addColor(String colorName,Long noteId);
+	public List<Note> getAllPinnedNoteList(Long userId);
 	
 	
 }
