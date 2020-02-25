@@ -28,7 +28,7 @@ public class HibernateUtil<T>
 		Session session = entityManager.unwrap(Session.class);
 		return (T) session.save(object);
 	}
-	
+
 	public Query<T> createQuery(String query)
 	{
 		Session session = entityManager.unwrap(Session.class);
@@ -61,6 +61,12 @@ public class HibernateUtil<T>
 		log.info("value:"+value);
 		Session session = entityManager.unwrap(Session.class);
 		return (T) session.get(Label.class,value);
+	}
+	public Query createNativeQuery(String query)
+	{
+		Session session = entityManager.unwrap(Session.class);
+		return session.createNativeQuery(query);
+
 	}
 	
 }
