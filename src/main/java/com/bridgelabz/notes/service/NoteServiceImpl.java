@@ -32,10 +32,9 @@ public class NoteServiceImpl {
 	NoteCreatedResponse notCreatedResponse;
 	@Autowired
 	NotesResponce noteObjectResponse;
-	
+
 	String status400 = "No notes Available";
 	String userNotExist = "User Token Expired or User Does Note Exist";
-	
 
 	@Transactional
 	public ResponseEntity<Object> createNote(Note note, String token) {
@@ -65,7 +64,8 @@ public class NoteServiceImpl {
 				noteDao.updateNote(noteId, note, getUserIdFromToken(token));
 				return ResponseEntity.status(HttpStatus.OK).body(new NotesResponce(200, "Note Updated"));
 			} else {
-				return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new UserDoesNotExistException(userNotExist, 400));
+				return ResponseEntity.status(HttpStatus.NO_CONTENT)
+						.body(new UserDoesNotExistException(userNotExist, 400));
 			}
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new UserDoesNotExistException(userNotExist, 400));
@@ -78,12 +78,13 @@ public class NoteServiceImpl {
 		try {
 			if (verifyUser(token)) {
 				if (noteDao.deleteNote(userId, noteId) == 1)
-					return ResponseEntity.status(HttpStatus.ACCEPTED).body("Note deleted ");
+					return ResponseEntity.status(HttpStatus.ACCEPTED).body(new NotesResponce(200, "Note Deleted"));
 				else
-					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Notes unavailable");
+					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new NotesResponce(200, "Note UnAvailable"));
 
 			} else {
-				return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new UserDoesNotExistException(userNotExist, 400));
+				return ResponseEntity.status(HttpStatus.NO_CONTENT)
+						.body(new UserDoesNotExistException(userNotExist, 400));
 
 			}
 		} catch (NullPointerException e) {
@@ -93,27 +94,61 @@ public class NoteServiceImpl {
 
 	@Transactional
 	public ResponseEntity<Object> getNoteList(String token) {
+		log.info("getAllNotes Service called...");
 		log.info("Number of Notes Available" + noteDao.getAllNoteList(getUserIdFromToken(token)).size());
 		try {
 			if (verifyUser(token)) {
-				if (noteDao.getAllNoteList(getUserIdFromToken(token)).isEmpty())
-					return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-							.body(new NotesResponce(400, "No any Notes Available"));
-				else
-					return ResponseEntity.status(HttpStatus.FOUND)
+				if (noteDao.getAllNoteList(getUserIdFromToken(token)).isEmpty()) {
+					log.info("No Notes Available...");
+					return ResponseEntity.status(HttpStatus.NO_CONTENT)
+							.body(new NotesResponce(204, "No any Notes Available"));
+				} else {
+
+					return ResponseEntity.status(HttpStatus.OK)
 							.body(new NotesResponce(200,
 									"Number of Notes Available Are: "
 											+ noteDao.getAllNoteList(getUserIdFromToken(token)).size(),
 									noteDao.getAllNoteList(getUserIdFromToken(token))));
+				}
+
 			} else {
-				return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new UserDoesNotExistException(userNotExist, 400));
+				return ResponseEntity.status(HttpStatus.NO_CONTENT)
+						.body(new UserDoesNotExistException(userNotExist, 400));
 			}
 		} catch (NullPointerException e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body(new NotesResponce(400, "Pin Operation Sucessfully done"));
 		}
 	}
+	
+	public ResponseEntity<Object> getPinnedNoteList(String token) {
+		log.info("getAllNotes Service called...");
+		log.info("Number of Notes Available" + noteDao.getAllPinnedNoteList(getUserIdFromToken(token)).size());
+		try {
+			if (verifyUser(token)) {
+				if (noteDao.getAllPinnedNoteList(getUserIdFromToken(token)).isEmpty()) {
+					log.info("No Notes Available...");
+					return ResponseEntity.status(HttpStatus.NO_CONTENT)
+							.body(new NotesResponce(204, "No any Notes Available"));
+				} else {
 
+					return ResponseEntity.status(HttpStatus.OK)
+							.body(new NotesResponce(200,
+									"Number of Notes Available Are: "
+											+ noteDao.getAllPinnedNoteList(getUserIdFromToken(token)).size(),
+									noteDao.getAllPinnedNoteList(getUserIdFromToken(token))));
+				}
+
+			} else {
+				return ResponseEntity.status(HttpStatus.NO_CONTENT)
+						.body(new UserDoesNotExistException(userNotExist, 400));
+			}
+		} catch (NullPointerException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(new NotesResponce(400, "Pin Operation Sucessfully done"));
+		}
+	}
+	
 	@Transactional
 	public ResponseEntity<Object> pinnedNotes(String token, Long noteId) {
 		try {
@@ -121,16 +156,15 @@ public class NoteServiceImpl {
 				Long userId = getUserIdFromToken(token);
 				Integer result = noteDao.pinUnpinNote(userId, noteId);
 				if (result == 1)
-					return ResponseEntity.status(HttpStatus.ACCEPTED)
-							.body(new NotesResponce(202, "Note Pinned"));
+					return ResponseEntity.status(HttpStatus.ACCEPTED).body(new NotesResponce(202, "Note Pinned"));
 				else if (result == 2)
-					return ResponseEntity.status(HttpStatus.ACCEPTED)
-							.body(new NotesResponce(202, "Note Unpinned"));
+					return ResponseEntity.status(HttpStatus.ACCEPTED).body(new NotesResponce(202, "Note Unpinned"));
 				else
 					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new NotesResponce(400, status400));
 
 			} else {
-				return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new UserDoesNotExistException(userNotExist, 400));
+				return ResponseEntity.status(HttpStatus.NO_CONTENT)
+						.body(new UserDoesNotExistException(userNotExist, 400));
 			}
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -144,16 +178,15 @@ public class NoteServiceImpl {
 			if (verifyUser(token)) {
 				Integer result = noteDao.trashedNote(noteId);
 				if (result == 1)
-					return ResponseEntity.status(HttpStatus.ACCEPTED)
-							.body(new NotesResponce(202, "Note Trashed"));
+					return ResponseEntity.status(HttpStatus.ACCEPTED).body(new NotesResponce(202, "Note Trashed"));
 				else if (result == 2)
-					return ResponseEntity.status(HttpStatus.ACCEPTED)
-							.body(new NotesResponce(202, "Note Restored"));
+					return ResponseEntity.status(HttpStatus.ACCEPTED).body(new NotesResponce(202, "Note Restored"));
 				else
 					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new NotesResponce(400, status400));
 
 			} else
-				return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new UserDoesNotExistException(userNotExist, 400));
+				return ResponseEntity.status(HttpStatus.NO_CONTENT)
+						.body(new UserDoesNotExistException(userNotExist, 400));
 
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new NotesResponce(400, status400));
@@ -163,16 +196,24 @@ public class NoteServiceImpl {
 	public ResponseEntity<Object> getTrashNotes(String token) {
 		try {
 			if (verifyUser(token)) {
-				log.info("Trashed Notes------>",noteDao.getTrashedNoteList(getUserIdFromToken(token)));
+				log.info("Trashed Notes------>", noteDao.getTrashedNoteList(getUserIdFromToken(token)));
+				if((noteDao.getTrashedNoteList(getUserIdFromToken(token)).isEmpty()))
+						return ResponseEntity.status(HttpStatus.ACCEPTED)
+								.body(new NotesResponce(202,
+										"No Trashed Notes Available"
+												+ noteDao.getTrashedNoteList(getUserIdFromToken(token)).size(),
+										noteDao.getTrashedNoteList(getUserIdFromToken(token))));	
+				else
 				return ResponseEntity.status(HttpStatus.ACCEPTED)
 						.body(new NotesResponce(202,
 								"Total Trashed Notes Are:"
 										+ noteDao.getTrashedNoteList(getUserIdFromToken(token)).size(),
 								noteDao.getTrashedNoteList(getUserIdFromToken(token))));
-				
-			}else {
 
-				return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new UserDoesNotExistException(userNotExist, 400));
+			} else {
+
+				return ResponseEntity.status(HttpStatus.NO_CONTENT)
+						.body(new UserDoesNotExistException(userNotExist, 400));
 			}
 		} catch (Exception e) {
 			log.info("get Trashed" + e);
@@ -187,16 +228,15 @@ public class NoteServiceImpl {
 			Integer result = noteDao.archivedNote(noteId);
 			if (verifyUser(token)) {
 				if (result == 1)
-					return ResponseEntity.status(HttpStatus.ACCEPTED)
-							.body(new NotesResponce(202, "Note archived"));
+					return ResponseEntity.status(HttpStatus.ACCEPTED).body(new NotesResponce(202, "Note archived"));
 				else if (result == 2)
-					return ResponseEntity.status(HttpStatus.ACCEPTED)
-							.body(new NotesResponce(202, "Note unarchived"));
+					return ResponseEntity.status(HttpStatus.ACCEPTED).body(new NotesResponce(202, "Note unarchived"));
 				else
 					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new NotesResponce(400, status400));
 
 			} else {
-				return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new UserDoesNotExistException(userNotExist, 400));
+				return ResponseEntity.status(HttpStatus.NO_CONTENT)
+						.body(new UserDoesNotExistException(userNotExist, 400));
 			}
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new NotesResponce(400, status400));
@@ -210,7 +250,7 @@ public class NoteServiceImpl {
 						.body(new NotesResponce(202,
 								"Total Achived Notes Are:"
 										+ noteDao.getArchiveNoteList(getUserIdFromToken(token)).size(),
-								noteDao.getTrashedNoteList(getUserIdFromToken(token))));
+								noteDao.getArchiveNoteList(getUserIdFromToken(token))));
 			} catch (Exception e) {
 				log.info("get Archived" + e);
 				return ResponseEntity.status(HttpStatus.CONFLICT).body(new NotesResponce(400, status400));
@@ -219,14 +259,21 @@ public class NoteServiceImpl {
 			return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new UserDoesNotExistException(userNotExist, 400));
 		}
 	}
-	
-	public ResponseEntity<Object> getNoteById(String token,Long tokenId)
-	{
+
+	public ResponseEntity<Object> getNoteById(String token, Long tokenId) {
 		if (verifyUser(token)) {
 			return ResponseEntity.status(HttpStatus.ACCEPTED)
-					.body(new NotesResponce(202,"Note Found",noteDao.getNoteById(tokenId)));
-		}else
-		{
+					.body(new NotesResponce(202, "Note Found", noteDao.getNoteById(tokenId)));
+		} else {
+			return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new UserDoesNotExistException(userNotExist, 400));
+		}
+	}
+
+	public ResponseEntity<Object> addColor(String colorName, String token, Long noteId) {
+		if (verifyUser(token)) {
+			noteDao.addColor(colorName, noteId);
+			return ResponseEntity.status(HttpStatus.ACCEPTED).body(new NotesResponce(202, "color Added"));
+		} else {
 			return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new UserDoesNotExistException(userNotExist, 400));
 		}
 	}
