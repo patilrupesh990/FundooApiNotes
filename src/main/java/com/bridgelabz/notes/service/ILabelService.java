@@ -5,7 +5,8 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 
 import com.bridgelabz.notes.model.Label;
-import com.bridgelabz.notes.response.LabelResponce;
+import com.bridgelabz.notes.util.LabelData;
+import com.bridgelabz.notes.util.NoteData;
 
 public interface ILabelService {
 	
@@ -17,11 +18,9 @@ public interface ILabelService {
 	public ResponseEntity<Object> editLabel(Long labelId,String newName,String token);
 	
 	public ResponseEntity<Object> getAllLabels(String token); 
-	public List<Object[]> getNotesByLabelId(String token, Long labelId) ;
-
-	//public void editLabel();
+	public List<NoteData[]> getNotesByLabelId(String token, Long labelId) ;
+	public  List<LabelData[]> getAllLabelofNote(String token, Long noteId); 
 	
-	//public void getnotesByLabel();
 	
 
 }
