@@ -1,9 +1,13 @@
 package com.bridgelabz.notes.service;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import javax.transaction.Transactional;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +21,8 @@ import com.bridgelabz.notes.model.Label;
 import com.bridgelabz.notes.model.Note;
 import com.bridgelabz.notes.response.LabelResponce;
 import com.bridgelabz.notes.util.JwtTokenUtil;
+import com.bridgelabz.notes.util.LabelData;
+import com.bridgelabz.notes.util.NoteData;
 import com.bridgelabz.notes.util.UserData;
 
 import lombok.extern.slf4j.Slf4j;
@@ -105,15 +111,26 @@ public class LabelService implements ILabelService {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public List<Object[]> getNotesByLabelId(String token, Long labelId) {
+	public List<NoteData[]> getNotesByLabelId(String token, Long labelId) {
 		if (verifyUser(token)) {
 
 			return labelDao.getNotesByLabelId(labelId);
 
 		} else {
-			return (List<Object[]>) ResponseEntity.status(HttpStatus.CONFLICT).body(new UserDoesNotExistException(userNotExist, 400));
+			return null;
 
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<LabelData[]> getAllLabelofNote(String token, Long noteId) {
+		if (verifyUser(token)) {
+			List<LabelData[]> labels = new ArrayList<LabelData[]>();
+		BeanUtils.copyProperties(labelDao.getAllLabelofNote(noteId), labels);
+			return labels;
+
+		} else {
+			return  null;
 		}
 	}
 
