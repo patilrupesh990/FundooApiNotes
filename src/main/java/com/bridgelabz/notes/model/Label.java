@@ -1,8 +1,7 @@
 package com.bridgelabz.notes.model;
 
-import java.util.List;
+import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,6 +12,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sun.istack.NotNull;
 
 import lombok.Data;
@@ -42,9 +42,10 @@ public class Label {
 	@Column(name="note_id")
 	private Long noteId;
 	
+	@JsonIgnore
 	@JoinColumn(name="user_id")
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany
     @JoinTable(name="note_label",joinColumns = {@JoinColumn(name="label_id")},inverseJoinColumns = {@JoinColumn(name="note_id")})
-    private List<Note> noteList;
+    private Set<Note> noteList;
 	
 }
