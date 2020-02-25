@@ -2,9 +2,8 @@ package com.bridgelabz.notes.model;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,6 +18,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -73,8 +73,9 @@ public class Note {
 	private Long userId;
 	
 	@JoinColumn(name="user_id")
-    @ManyToMany(cascade = CascadeType.ALL)
+	@JsonIgnore
+    @ManyToMany
     @JoinTable(name="note_label",joinColumns = {@JoinColumn(name="note_id")},inverseJoinColumns = {@JoinColumn(name="label_id")})
-	private List<Label> labelList;
-
+	private Set<Label> labelList;
+	
 }
