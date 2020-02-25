@@ -57,7 +57,16 @@ public class NotesDaoimpl implements INotesDao {
 
 	@Override
 	public List<Note> getAllNoteList(Long userId) {
-		String query = "FROM Note WHERE userId =:userid";
+		log.info("GetAll Notes daoo called...");
+		String query = "FROM Note WHERE userId =:userid AND isTrash is false AND isPin is false AND isArchive is false";
+		Query<Note> hquery = hibernateUtil.createQuery(query);
+		hquery.setParameter("userid", userId);
+		return hquery.list();
+	}
+	@Override
+	public List<Note> getAllPinnedNoteList(Long userId) {
+		log.info("GetPinned Notes daoo called...");
+		String query = "FROM Note WHERE userId =:userid AND  isPin is true AND isArchive is false";
 		Query<Note> hquery = hibernateUtil.createQuery(query);
 		hquery.setParameter("userid", userId);
 		return hquery.list();
@@ -76,11 +85,22 @@ public class NotesDaoimpl implements INotesDao {
 		}
 		return 0;
 	}
+	public void addColor(String colorName,Long noteId)
+	{
+		Note noteObject = hibernateUtil.getCurrentNote(noteId);
+		if (noteObject != null) {
+			noteObject.setColor(colorName);
+			hibernateUtil.update(noteObject);
+			
+		}
+	}
+	
 	@Override
 	public Integer trashedNote(Long noteId) {
 		Note noteObject = hibernateUtil.getCurrentNote(noteId);
 		if (noteObject != null) {
 			noteObject.setTrash(!noteObject.isTrash());
+			noteObject.setPin(false);
 			hibernateUtil.update(noteObject);
 			if(noteObject.isTrash())
 				return 1;
@@ -103,6 +123,7 @@ public class NotesDaoimpl implements INotesDao {
 		Note noteobject = hibernateUtil.getCurrentNote(noteId);
 		if (noteobject != null) {
 			noteobject.setArchive(!noteobject.isArchive());
+			noteobject.setPin(false);
 			hibernateUtil.update(noteobject);
 			if (noteobject.isArchive())
 				return 1;
@@ -116,7 +137,7 @@ public class NotesDaoimpl implements INotesDao {
 
 	@Override
 	public List<Note> getArchiveNoteList(Long userId) {
-		String query = "FROM Note WHERE isArchive is true AND userId=:userid";
+		String query = "FROM Note WHERE isArchive is true AND isTrash is false AND userId=:userid";
 		Query<Note> hquery = hibernateUtil.select(query);
 		hquery.setParameter("userid", userId);
 		return hquery.list();
